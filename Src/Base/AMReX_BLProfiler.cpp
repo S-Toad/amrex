@@ -23,6 +23,9 @@
 #include <cstdlib>
 #include <cmath>
 
+// INCLUDE PERFUMP
+#include “perf_dump.h”
+
 namespace amrex {
 
 
@@ -317,6 +320,8 @@ void BLProfiler::start() {
 #pragma omp master
 #endif
 {
+  pdump_start_profile();  // <------------- PERFDUMP START PROFILE
+
   bltelapsed = 0.0;
   bltstart = amrex::second();
   ++mProfStats[fname].nCalls;
@@ -352,6 +357,8 @@ void BLProfiler::stop() {
 #pragma omp master
 #endif
 {
+  pdump_end_profile();  // <------------- PERFDUMP END PROFILE
+
   double tDiff(amrex::second() - bltstart);
   double nestedTime(0.0);
   bltelapsed += tDiff;
@@ -426,6 +433,8 @@ void BLProfiler::AddStep(const int snum) {
 void BLProfiler::RegionStart(const std::string &rname) {
   Real rsTime(amrex::second() - startTime);
 
+  pdump_start_region_with_name(regname);  // <------------- PERFDUMP REGION START
+
   if(rname != noRegionName) {
     ++inNRegions;
   }
@@ -447,6 +456,8 @@ void BLProfiler::RegionStart(const std::string &rname) {
 
 void BLProfiler::RegionStop(const std::string &rname) {
   Real rsTime(amrex::second() - startTime);
+
+  pdump_end_region_with_name(regname);  // <------------- PERFDUMP REGION END
 
   int rnameNumber;
   std::map<std::string, int>::iterator it = BLProfiler::mRegionNameNumbers.find(rname);

@@ -12,6 +12,7 @@
 #include <AMReX_ParallelReduce.H>
 #include <AMReX_Utility.H>
 #include <AMReX_Print.H>
+#include “perf_dump.h”
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -64,6 +65,9 @@ TinyProfiler::start () noexcept
 #ifdef _OPENMP
 #pragma omp master
 #endif
+
+	pdump_start_profile();  // <------------- PERFDUMP START PROFILE
+
     if (stats.empty() && !regionstack.empty())
     {
 	double t = amrex::second();
@@ -90,6 +94,9 @@ TinyProfiler::stop () noexcept
 #ifdef _OPENMP
 #pragma omp master
 #endif
+
+	pdump_end_profile();  // <------------- PERFDUMP END PROFILE
+
     if (!stats.empty()) 
     {
 	double t = amrex::second();
@@ -380,6 +387,7 @@ TinyProfiler::PrintStats (std::map<std::string,Stats>& regstats, double dt_max)
 void
 TinyProfiler::StartRegion (std::string regname) noexcept
 {
+	pdump_start_region_with_name(regname);  // <------------- PERFDUMP REGION START
     if (std::find(regionstack.begin(), regionstack.end(), regname) == regionstack.end()) {
         regionstack.emplace_back(std::move(regname));
     }
@@ -388,6 +396,7 @@ TinyProfiler::StartRegion (std::string regname) noexcept
 void
 TinyProfiler::StopRegion (const std::string& regname) noexcept
 {
+	pdump_end_region_with_name(regname);  // <------------- PERFDUMP REGION END
     if (regname == regionstack.back()) {
         regionstack.pop_back();
     }
